@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام التشخيص الذكي - TShoot</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            text-align: right;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* شريط التنقل العلوي */
+        .navbar {
+            background-color: #1e293b;
+            padding: 14px 24px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #334155;
+            color: white;
+        }
+
+        .nav-link.active {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        h1 {
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .btn-scan {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-scan:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-print {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        .btn-print:hover {
+            background-color: #15803d;
+        }
+
+        .result-card {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border-right: 5px solid #2563eb;
+        }
+
+        .chart-box {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        th,
+        td {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: right;
+        }
+
+        th {
+            background-color: #e2e8f0;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            background-color: #64748b;
+        }
+
+        .badge-adb {
+            background-color: #16a34a;
+        }
+
+        .badge-fastboot {
+            background-color: #ea580c;
+        }
+
+        .badge-none {
+            background-color: #dc2626;
+        }
+
+        /* تنسيقات ورقة الطباعة */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                padding: 0 !important;
+                color: #000000 !important;
+            }
+
+            .container {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .navbar,
+            .btn-scan,
+            .btn-print,
+            form,
+            h2,
+            table {
+                display: none !important;
+            }
+
+            .result-card,
+            .chart-box {
+                border: 2px solid #000000 !important;
+                background-color: #ffffff !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- شريط التنقل التنفيذي -->
+        <div class="navbar">
+            <div class="navbar-brand">
+                🔧 TShoot - نظام التشخيص الذكي
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">🏠 المتجر / الرئيسية</a>
+                <a href="/diagnostics" class="nav-link active">⚡ تشخيص الهاردوير</a>
+            </div>
+        </div>
+
+        <h1>مركز تشخيص وصيانة الهواتف - TShoot</h1>
+
+        <form action="/scan" method="POST">
+            <button type="submit" class="btn-scan">فحص الجهاز الموصول الآن</button>
+        </form>
+
+        {% if latest %}
+        <div class="result-card">
+            <h3>آخر نتيجة فحص تلقائي:</h3>
+            <p><strong>الوضعية المكتشفة:</strong> <span class="badge badge-{{ latest.mode|lower }}">{{ latest.mode
+                    }}</span></p>
+            <p><strong>التفاصيل:</strong> {{ latest.details }}</p>
+            <p><strong>التشخيص:</strong> {{ latest.diagnosis }}</p>
+            <p><strong>الحل المقترح:</strong> {{ latest.suggested_solution }}</p>
+        </div>
+        {% endif %}
+
+        <!-- الرسم البياني يظهر دائماً -->
+        <div class="chart-box">
+            <h3 style="margin-top: 0; text-align: right;">📊 الرسم البياني لسحب التيار والجهد (مباشر)</h3>
+            <canvas id="customChart" width="750" height="220"></canvas>
+            <div>
+                <button onclick="window.print()" class="btn-print">🖨️ طباعة تقرير التشخيص للزبون</button>
+            </div>
+        </div>
+
+        <h2>سجل الفحوصات السابقة</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>التاريخ والوقت</th>
+                    <th>الوضعية</th>
+                    <th>التفاصيل</th>
+                    <th>التشخيص والحل</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in records %}
+                <tr>
+                    <td>{{ rec.id }}</td>
+                    <td>{{ rec.timestamp }}</td>
+                    <td><span class="badge">{{ rec.mode }}</span></td>
+                    <td>{{ rec.details }}</td>
+                    <td>{{ rec.diagnosis }} <br><small style="color: #2563eb;">الحل: {{ rec.suggested_solution
+                            }}</small></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">لا يوجد فحوصات مسجلة بعد. اضغط على "فحص الجهاز الموصول
+                        الآن".</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        window.addEventListener("load", function () {
+            let currentVal = {{ current_amps|default (0.15)
+        }};
+        let voltageVal = {{ current_voltage|default (5.0) }};
+
+        {% if latest and latest.details %}
+        const detailsText = "{{ latest.details }}";
+        const currentMatch = detailsText.match(/([0-9.]+)A/);
+        const voltageMatch = detailsText.match(/([0-9.]+)V/);
+
+        if (currentMatch) currentVal = parseFloat(currentMatch[1]);
+        if (voltageMatch) voltageVal = parseFloat(voltageMatch[1]);
+        {% endif %}
+
+        const canvas = document.getElementById('customChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // رسم الخلفية والشبكة
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = 1;
+        for (let y = 30; y < height - 30; y += 40) {
+            ctx.beginPath();
+            ctx.moveTo(50, y);
+            ctx.lineTo(width - 20, y);
+            ctx.stroke();
+        }
+
+        // نقاط منحنى سحب التيار
+        const currentPoints = [
+            { x: 60, y: height - 40 },
+            { x: 200, y: height - 55 },
+            { x: 350, y: height - 70 },
+            { x: 500, y: height - (40 + (currentVal * 80)) },
+            { x: 700, y: height - (40 + (currentVal * 80)) }
+        ];
+
+        // رسم منحنى التيار (باللون الأزرق)
+        ctx.beginPath();
+        ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+        for (let i = 1; i < currentPoints.length; i++) {
+            ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
+        }
+        ctx.strokeStyle = "#2563eb";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // تعبئة مساحة تحت منحنى التيار
+        ctx.lineTo(700, height - 40);
+        ctx.lineTo(60, height - 40);
+        ctx.fillStyle = "rgba(37, 99, 235, 0.1)";
+        ctx.fill();
+
+        // رسم نقاط القراءة
+        currentPoints.forEach((pt) => {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#2563eb";
+            ctx.fill();
+        });
+
+        // كتابة النصوص التوضيحية والقياسات
+        ctx.font = "bold 13px Tahoma";
+        ctx.fillStyle = "#2563eb";
+        ctx.fillText("سحب التيار: " + currentVal + " A", 520, height - (50 + (currentVal * 80)));
+
+        ctx.fillStyle = "#16a34a";
+        ctx.fillText("الجهد: " + voltageVal + " V", 520, 45);
+
+        // خط الجهد الثابت (باللون الأخضر)
+        ctx.beginPath();
+        ctx.setLineDash([6, 6]);
+        ctx.moveTo(60, 55);
+        ctx.lineTo(700, 55);
+        ctx.strokeStyle = "#16a34a";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // المحاور والأدلة
+        ctx.font = "11px Tahoma";
+        ctx.fillStyle = "#64748b";
+        const labels = ["بداية التوصيل", "إشارة VBUS", "تهيئة IC", "الاستقرار", "القراءة الفعلية"];
+        labels.forEach((lbl, i) => {
+            ctx.fillText(lbl, currentPoints[i].x - 25, height - 15);
+        });
+        });
+    </script>
+
+</body>
+
+</html>
