@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TShoot - لوحة تحكم المحل</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">🛠️ TShoot | {{ shop.shop_name }}</a>
+            <div class="d-flex">
+                <a href="{{ url_for('shop.logout') }}" class="btn btn-outline-light btn-sm">تسجيل الخروج</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} py-2">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- معلومات المحل -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm p-4 border-0 rounded-4">
+                    <h4 class="fw-bold mb-3">مرحباً، {{ shop.owner_name }} 👋</h4>
+                    <p class="text-muted mb-1">اسم المحل: <strong>{{ shop.shop_name }}</strong></p>
+                    <p class="text-muted mb-1">رقم الهاتف: <strong>{{ shop.phone }}</strong></p>
+                    <p class="text-muted mb-0">حالة الاشتراك:
+                        {% if shop.is_paid %}
+                        <span class="badge bg-success">مدفوع / فعال</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">فترة تجريبية</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- نموذج إضافة تذكرة صيانة جديدة -->
+        <div class="card shadow-sm p-4 border-0 rounded-4 mb-4">
+            <h5 class="fw-bold mb-3">➕ إضافة تذكرة صيانة جديدة</h5>
+            <form action="{{ url_for('shop.add_ticket') }}" method="POST">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">اسم العميل</label>
+                        <input type="text" name="customer_name" class="form-control" required placeholder="اسم العميل">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">رقم هاتف العميل</label>
+                        <input type="text" name="customer_phone" class="form-control" required placeholder="09xxxxxxxx">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">موديل الجهاز</label>
+                        <input type="text" name="device_model" class="form-control" required
+                            placeholder="مثال: آيفون 11">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">العطل / المشكلة</label>
+                        <input type="text" name="issue_description" class="form-control" required
+                            placeholder="وصف العطل">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">تكلفة الصيانة</label>
+                        <input type="number" step="0.01" name="cost" class="form-control" value="0.00">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">حالة الجهاز</label>
+                        <select name="status" class="form-select">
+                            <option value="قيد الفحص">قيد الفحص</option>
+                            <option value="قيد الصيانة">قيد الصيانة</option>
+                            <option value="تم الإصلاح">تم الإصلاح</option>
+                            <option value="تم الاستلام">تم الاستلام</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <button type="submit" class="btn btn-dark w-100">حفظ وإضافة التذكرة</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- شريط البحث السريع -->
+        <div class="card shadow-sm p-4 border-0 rounded-4 mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-12">
+                    <label for="searchInput" class="form-label fw-bold">🔍 بحث سريع في التذاكر</label>
+                    <input type="text" id="searchInput" class="form-control"
+                        placeholder="ابحث باسم العميل، رقم الهاتف، أو موديل الجهاز...">
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول تذاكر الصيانة مع دعم البحث -->
+        <div class="card shadow-sm p-4 border-0 rounded-4">
+            <h5 class="fw-bold mb-3">📋 تذاكر الصيانة المسجلة</h5>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle" id="ticketsTable">
+                    <thead>
+                        <tr>
+                            <th>رقم التذكرة</th>
+                            <th>اسم العميل</th>
+                            <th>هاتف العميل</th>
+                            <th>الجهاز</th>
+                            <th>العطل</th>
+                            <th>التكلفة</th>
+                            <th>الحالة</th>
+                            <th>إجراءات / واتساب</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if tickets %}
+                        {% for ticket in tickets %}
+                        <tr>
+                            <td>#{{ ticket.id }}</td>
+                            <td>{{ ticket.customer_name }}</td>
+                            <td>{{ ticket.customer_phone }}</td>
+                            <td>{{ ticket.device_model }}</td>
+                            <td>{{ ticket.issue_description }}</td>
+                            <td>{{ ticket.cost }} د.ل</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ ticket.status }}</span>
+                            <td>
+                                {% set wa_text = "مرحباً العميل العزيز " ~ ticket.customer_name ~ "، بخصوص جهازك (" ~
+                                ticket.device_model ~ ") حالة
+                                الصيانة الحالية: " ~ ticket.status ~ "." %}
+
+                                <!-- زر الواتساب -->
+                                <a href="https://wa.me/{{ ticket.customer_phone }}?text={{ wa_text | urlencode }}"
+                                    target="_blank"
+                                    class="btn btn-success btn-sm d-inline-flex align-items-center gap-1">
+                                    💬 مراسلة
+                                </a>
+
+                                <!-- زر طباعة الإيصال -->
+                                <a href="{{ url_for('shop.print_ticket', ticket_id=ticket.id) }}" target="_blank"
+                                    class="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-1">
+                                    🖨️ إيصال
+                                </a>
+
+                                <!-- زر حذف التذكرة -->
+                                <form action="{{ url_for('shop.delete_ticket', ticket_id=ticket.id) }}" method="POST"
+                                    class="d-inline" onsubmit="return confirm('هل أنت تأكد من حذف هذه التذكرة؟');">
+                                    <button type="submit"
+                                        class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1">
+                                        🗑️ حذف
+                                    </button>
+                                </form>
+                            </td>
+
+                            <!-- زر طباعة الإيصال -->
+                            <a href="{{ url_for('shop.print_ticket', ticket_id=ticket.id) }}" target="_blank"
+                                class="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-1">
+                                🖨️ إيصال
+                            </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr id="noTicketsRow">
+                            <td colspan="8" class="text-center text-muted py-4">لا توجد تذاكر صيانة مسجلة حتى الآن</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- كود JavaScript للبحث الفوري -->
+    <script>
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll('#ticketsTable tbody tr');
+
+            rows.forEach(row => {
+                if (row.id === 'noTicketsRow') return;
+
+                let text = row.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
