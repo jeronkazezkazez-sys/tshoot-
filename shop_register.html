@@ -10,9 +10,9 @@
 
 <body class="bg-light d-flex align-items-center justify-content-center vh-100">
 
-    <div class="card shadow p-4" style="width: 450px; border-radius: 12px;">
+    <div class="card shadow p-4" style="width: 400px; border-radius: 12px;">
         <h3 class="text-center mb-3 fw-bold">🛠️ TShoot</h3>
-        <p class="text-center text-muted mb-4">إنشاء حساب محل جديد (فترة تجريبية 14 يوم)</p>
+        <p class="text-center text-muted mb-4">أنشئ حساب محلك وابدأ فترة مجانية لمدة 14 يوماً</p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -26,14 +26,14 @@
             <div class="mb-3">
                 <label class="form-label">اسم المحل</label>
                 <input type="text" name="shop_name" class="form-control" required
-                    placeholder="مثال: صيانة الموبايل الذكي">
+                    placeholder="مثال: مركز النخبة للصيانة">
             </div>
             <div class="mb-3">
-                <label class="form-label">اسم المالك</label>
+                <label class="form-label">اسم صاحب المحل أو الفني</label>
                 <input type="text" name="owner_name" class="form-control" required placeholder="اسمك الكريم">
             </div>
             <div class="mb-3">
-                <label class="form-label">رقم الهاتف (لليوزرنيم)</label>
+                <label class="form-label">رقم الهاتف (للتسجيل والدخول)</label>
                 <input type="text" name="phone" class="form-control" required placeholder="05xxxxxxxx">
             </div>
             <div class="mb-3">
@@ -43,8 +43,8 @@
             <button type="submit" class="btn btn-dark w-100 py-2">تسجيل وفتح الحساب</button>
         </form>
         <div class="text-center mt-3">
-            <small>لديك حساب بالفعل؟ <a href="{{ url_for('shop.login') }}" class="text-decoration-none">سجل
-                    دخولك</a></small>
+            <small>لديك حساب بالفعل؟ <a href="{{ url_for('shop.login') }}" class="text-decoration-none">تسجيل
+                    الدخول</a></small>
         </div>
     </div>
 
