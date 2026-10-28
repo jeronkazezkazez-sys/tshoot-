@@ -1,8 +1,7 @@
 import os
-from flask import Flask
+from flask import Flask, redirect, url_for
 from models import db
 from shop_routes import shop_bp
-
 app = Flask(__name__)
 
 # إعدادات قاعدة البيانات وسرية الجلسات
