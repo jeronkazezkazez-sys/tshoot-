@@ -13,6 +13,9 @@ class Shop(db.Model):
     phone = db.Column(db.String(20), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     
+    # حقل جديد لتحديد عملة المحل (مثل: د.ل، ر.س، ج.م، $)
+    currency = db.Column(db.String(10), default='د.ل', nullable=False)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     trial_ends_at = db.Column(db.DateTime, default=lambda: datetime.utcnow() + timedelta(days=14))
     is_active = db.Column(db.Boolean, default=True)
@@ -28,8 +31,8 @@ class Shop(db.Model):
         return check_password_hash(self.password_hash, password)
 
     @classmethod
-    def create_shop(cls, shop_name, owner_name, phone, password):
-        shop = cls(shop_name=shop_name, owner_name=owner_name, phone=phone)
+    def create_shop(cls, shop_name, owner_name, phone, password, currency='د.ل'):
+        shop = cls(shop_name=shop_name, owner_name=owner_name, phone=phone, currency=currency)
         shop.set_password(password)
         db.session.add(shop)
         db.session.commit()
@@ -37,6 +40,7 @@ class Shop(db.Model):
 
     def is_trial_active(self):
         return datetime.utcnow() <= self.trial_ends_at
+
 
 class RepairTicket(db.Model):
     __tablename__ = 'repair_tickets'
@@ -50,7 +54,7 @@ class RepairTicket(db.Model):
     status = db.Column(db.String(30), default='قيد الفحص')
     cost = db.Column(db.Float, default=0.0)
     
-    # حقل جديد خاص بالأرشفة (True تعني ظاهرة في اللوحة، False تعني مؤرشفة ومخفية ولكنها محفوظة)
+    # حقل خاص بالأرشفة (True تعني ظاهرة، False تعني مؤرشفة)
     is_active = db.Column(db.Boolean, default=True)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -43,3 +43,8 @@ def update_subscription(shop_id):
     db.session.commit()
     flash(f'تم تفعيل اشتراك محل {shop.shop_name} بنجاح لمدة {months_to_add} أشهر.', 'success')
     return redirect(url_for('admin.dashboard'))
+
+@admin_bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('admin.admin_login'))
