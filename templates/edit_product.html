@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل المنتج - Les Solutions Intelligentes</title>
+    <style>
+        :root {
+            --gold: #d4af37;
+            --dark-bg: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --text-color: #f3f3f3;
+            --border-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            color: var(--gold);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--gold);
+            font-size: 14px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            background: #111;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--gold);
+            color: #000;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: var(--gold);
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="{{ url_for('admin_panel') }}" class="back-link">← العودة إلى لوحة التحكم</a>
+        <h2>تعديل المنتج 🛠️</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>اسم المنتج:</label>
+                <input type="text" name="name" value="{{ product.name }}" required>
+            </div>
+            <div class="form-group">
+                <label>التصنيف:</label>
+                <input type="text" name="category" value="{{ product.category }}" required>
+            </div>
+            <div class="form-group">
+                <label>السعر الحالي:</label>
+                <input type="text" name="price" value="{{ product.price }}" required>
+            </div>
+            <div class="form-group">
+                <label>السعر القديم (المشطوب):</label>
+                <input type="text" name="old_price" value="{{ product.old_price }}">
+            </div>
+            <div class="form-group">
+                <label>حالة المنتج:</label>
+                <select name="status">
+                    <option value="available" {% if product.status=='available' %}selected{% endif %}>متوفر</option>
+                    <option value="out_of_stock" {% if product.status=='out_of_stock' %}selected{% endif %}>نفدت الكمية
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الوصف:</label>
+                <textarea name="description" rows="3">{{ product.description }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>تغيير الصورة (اختياري):</label>
+                <input type="file" name="image" accept="image/*">
+            </div>
+            <button type="submit">حفظ التعديلات ⚡</button>
+        </form>
+    </div>
+</body>
+
+</html>

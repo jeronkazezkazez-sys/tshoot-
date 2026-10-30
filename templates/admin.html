@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - TShoot</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Tahoma, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2,
+        h3 {
+            color: #d4af37;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+        }
+
+        .form-container,
+        .table-container {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #b0b0b0;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            background-color: #2c2c2c;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button,
+        .btn {
+            background-color: #d4af37;
+            color: #121212;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        button:hover,
+        .btn:hover {
+            background-color: #c19b2e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        th {
+            background-color: #252525;
+            color: #d4af37;
+        }
+
+        tr:hover {
+            background-color: #252525;
+        }
+
+        .btn-danger {
+            background-color: #a94442;
+            color: white;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .btn-danger:hover {
+            background-color: #843534;
+        }
+
+        .btn-edit {
+            background-color: #337ab7;
+            color: white;
+            padding: 6px 12px;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+
+        .btn-edit:hover {
+            background-color: #286090;
+        }
+
+        .product-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>لوحة تحكم المتجر والصيانة (TShoot)</h2>
+        <a href="{{ url_for('index') }}" class="btn" style="background-color: #333; color: #fff;">عرض المتجر الرئيسي</a>
+    </div>
+
+    <!-- 1. نموذج إضافة منتج جديد (أكسسوارات، قطع غيار، إلخ) -->
+    <div class="form-container">
+        <h3>+ إضافة منتج جديد (إكسسوارات / قطع غيار)</h3>
+        <form method="POST" action="{{ url_for('admin_panel') }}" enctype="multipart/form-data">
+            <label>اسم المنتج:</label>
+            <input type="text" name="name" required placeholder="مثال: شاحن أصلي سامسونج / شاشة آيفون...">
+
+            <label>القسم / التصنيف:</label>
+            <select name="category" required>
+                <option value="accessories">إكسسوارات</option>
+                <option value="spare_parts">قطع غيار</option>
+                <option value="tools">أدوات صيانة</option>
+                <option value="other">أخرى</option>
+            </select>
+
+            <label>السعر الحالي:</label>
+            <input type="text" name="price" required placeholder="مثال: 45 د.ل">
+
+            <label>السعر القديم (اختياري للشخصيات والتخفيضات):</label>
+            <input type="text" name="old_price" placeholder="مثال: 60 د.ل">
+
+            <label>الحالة:</label>
+            <select name="status">
+                <option value="available">متوفر</option>
+                <option value="out_of_stock">غير متوفر</option>
+            </select>
+
+            <label>وصف المنتج:</label>
+            <textarea name="description" rows="3" placeholder="تفاصيل المنتج أو الموديلات المتوافقة معه..."></textarea>
+
+            <label>صورة المنتج:</label>
+            <input type="file" name="image" accept="image/*">
+
+            <button type="submit">حفظ وإضافة المنتج للقائمة</button>
+        </form>
+    </div>
+
+    <!-- 2. جدول إدارة وعرض المنتجات -->
+    <div class="table-container">
+        <h3>📦 إدارة المنتجات والقطع الحالية في المتجر</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>الصورة</th>
+                    <th>اسم المنتج</th>
+                    <th>القسم</th>
+                    <th>السعر</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if products %}
+                {% for product in products %}
+                <tr>
+                    <td>
+                        {% if product.image %}
+                        <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="product-img"
+                            alt="صورة">
+                        {% else %}
+                        <span style="color: #777;">بدون صورة</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category }}</td>
+                    <td>{{ product.price }}</td>
+                    <td>
+                        {% if product.status == 'available' %}
+                        <span style="color: #5cb85c;">متوفر</span>
+                        {% else %}
+                        <span style="color: #d9534f;">غير متوفر</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-edit">تعديل</a>
+                        <form action="{{ url_for('delete_product', id=product.id) }}" method="POST"
+                            style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا المنتج؟');">
+                            <button type="submit" class="btn btn-danger">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6" style="color: #888;">لا توجد منتجات مسجلة حالياً. استخدم القائمة بالأسفل لإضافة منتج
+                        جديد.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 3. نموذج إضافة طلب صيانة جديد -->
+    <div class="form-container">
+        <h3>+ إضافة طلب صيانة جديد</h3>
+        <form method="POST" action="{{ url_for('add_repair') }}">
+            <label>اسم الزبون:</label>
+            <input type="text" name="customer_name" required placeholder="أدخل اسم الزبون...">
+
+            <label>نوع / اسم الجهاز:</label>
+            <input type="text" name="device_name" required placeholder="اختر نوع الجهاز أو مديله...">
+
+            <label>رقم الهاتف (مع رمز الدولة):</label>
+            <input type="text" name="phone" required placeholder="21891xxxxxxx">
+
+            <label>تاريخ الاستلام:</label>
+            <input type="date" name="order_date">
+
+            <button type="submit">حفظ وإضافة للقائمة</button>
+        </form>
+    </div>
+
+    <!-- 4. متابعة وإرسال إشعارات الصيانة للزبائن -->
+    <div class="table-container">
+        <h3>🛠️ متابعة وإرسال إشعارات الصيانة للزبائن</h3>
+        <p style="color: #aaa; font-size: 14px;">اضغط على الزر بجانب اسم الزبون لفتح الواتساب وإرسال إشعار جاهزة للهاتف
+            تلقائياً.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>تاريخ الاستلام</th>
+                    <th>اسم الزبون</th>
+                    <th>الهاتف / الجهاز</th>
+                    <th>رقم الهاتف</th>
+                    <th>الإجراءات والواتساب</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if repair_orders %}
+                {% for order in repair_orders %}
+                <tr>
+                    <td>{{ order.order_date }}</td>
+                    <td style="font-weight: bold; color: #d4af37;">{{ order.customer_name }}</td>
+                    <td>{{ order.device_name }}</td>
+                    <td>{{ order.phone }}</td>
+                    <td>
+                        <!-- زر الواتساب -->
+                        <a href="https://wa.me/{{ order.phone }}?text=مرحباً%20السيد%20{{ order.customer_name }}،%20نحيطكم علماً بأن جهازكم%20({{ order.device_name }})%20جاهز للاستلام."
+                            class="btn"
+                            style="background-color: #25d366; color: #fff; padding: 6px 12px; font-size: 14px; margin-left: 5px;"
+                            target="_blank">
+                            واتساب
+                        </a>
+                        <!-- زر إتمام التصليح والحذف -->
+                        <form action="{{ url_for('delete_repair', id=order.id) }}" method="POST" style="display:inline;"
+                            onsubmit="return confirm('هل تم تسليم الجهاز للزبون وحذف الطلب من القائمة؟');">
+                            <button type="submit" class="btn btn-danger">إتمام وحذف</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" style="color: #888;">لا توجد طلبات صيانة مسجلة حالياً. استخدم القائمة بالأعلى لإضافة
+                        طلب جديد.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>
