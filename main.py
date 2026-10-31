@@ -30,7 +30,7 @@ db.init_app(app)
 app.register_blueprint(shop_bp)
 app.register_blueprint(admin_bp)
 
-# إنشاء الجداول عند التشغيل
+# إنشاء الجداول عند التشغيل (في المكان الصحيح بعد تعريف app و init_app)
 with app.app_context():
     db.create_all()
 
